@@ -10,7 +10,6 @@ struct TreeNode {
 	int frequency = 0;
 	int leftptr = -1;
 	int rightptr = -1;
-	int parent = -1;
 
 	bool operator<(TreeNode& other) {
 		return (this->frequency < other.frequency);
@@ -25,7 +24,6 @@ struct TreeNode {
 
 std::string fileName;
 
-//Array is built right to left, so this is ptr at what should be the "0" element.
 int huffStart = 513;
 int huffEnd;
 TreeNode huffmanTable[513];
@@ -34,9 +32,15 @@ int freqStart = 0;
 std::array<TreeNode, 257> frequencyTable;
 
 std::vector<unsigned char> fileContent;
-const int bufferSize = 16;
+const int bufferSize = 128;
 int bufferRemainder = 0;
 
+const int outputBufferSize = 1024;
+bool outputBuffer[outputBufferSize];
+
+std::vector<std::vector<bool>> codes(257);
+
+//This is neglible
 void checkFin(std::ifstream& fin) {
 	//Check file opened
 	if (!fin.is_open()) {
@@ -45,6 +49,7 @@ void checkFin(std::ifstream& fin) {
 	}
 }
 
+//This is neglible
 void initFreqTable() {
 	for (int i = 0; i < 257; ++i)
 	{
@@ -52,6 +57,7 @@ void initFreqTable() {
 	}
 }
 
+//This is negligible
 void findFreqStart() {
 	for (int i = 0; i < 267; ++i) {
 		if (frequencyTable[i].frequency != 0) {
@@ -61,6 +67,7 @@ void findFreqStart() {
 	}
 }
 
+//This is pretty fast
 void readFile(std::ifstream& fin) {
 	fin.seekg(0, std::ios::end);
 	int size = fin.tellg();
@@ -88,6 +95,7 @@ void readFile(std::ifstream& fin) {
 	}
 }
 
+//This is really slow
 void makeHuffmanTree() {
 	//create huffman table
 	for (int i = freqStart; i < 257; ++i) {
@@ -122,6 +130,53 @@ void makeHuffmanTree() {
 	}
 }
 
+//This is about as fast as it gets, but still slow. O(n) for this vs O(n/2) for a optimal non lazy method
+void mapHuffToCode() {
+	for (int j = 0; j < 257; ++j) {
+		for (int i = 0; i < 513; ++i) {
+			if (j == huffmanTable[i].glyph) {
+				std::vector<bool> temp;
+				
+				//this case is disgusting
+				if (huffEnd == 0) {
+					temp.push_back(true);
+					codes[j] = temp;
+					return;
+				}
+				//this is disgusting too
+				else {
+					int previousNode = i;
+					do {
+						for (int k = 0; k < 513; ++k) {
+							if (previousNode == huffmanTable[k].rightptr) {
+								temp.push_back(true);
+								previousNode = k;
+								break;
+							}
+							else if (previousNode == huffmanTable[k].leftptr) {
+								temp.push_back(false);
+								previousNode = k;
+								break;
+							}
+						}
+						//flip with this code if codes come out perfectly backwards. I'm too tired to thunk about this.
+						/*
+						if (previousNode == 0) {
+							std::reverse(temp.begin(), temp.end());
+						}
+						*/
+						
+					} while (previousNode != 0);
+				}
+
+				codes[j] = temp;
+				break;
+			}
+		}
+	}
+	
+}
+
 int main() {
 	std::ifstream fin;
 	std::cin >> fileName;
@@ -140,8 +195,41 @@ int main() {
 	
 	makeHuffmanTree();
 
-	//encode 
+	mapHuffToCode();
 
+	//output header data here
+	//huffEnd shows the last used element in the huffman array
+	//huffEnd + 1 is the number of elements in huffman array
+	//fileName is file name
 
+	//encode and output
+	int inputIter = 0;
+	int outputIter = 0;
+	for (int i = 0; i < fileContent.size() / (outputBufferSize - 9); ++i) {
+		while (fileContent.size() > (outputBufferSize - 9)) {
+			for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
+				outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
+				outputIter++;
+			}
+			++inputIter;
+		}
+		outputIter = 0;
 
+		//output outputBuffer until outputIter
+	}
+
+	int remainder = fileContent.size() - inputIter;
+
+	if (remainder != 0) {
+		for (int i = 0; i < remainder; ++i) {
+			for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
+				outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
+				outputIter++;
+			}
+			++inputIter;
+		}
+		//output outputBuffer until outputIter
+	}
+
+	//dont forget to output codes[256], and to fill any remaining bits with 0
 }
