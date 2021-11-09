@@ -10,6 +10,7 @@ struct TreeNode {
 	int frequency = 0;
 	int leftptr = -1;
 	int rightptr = -1;
+	int parent = -1;
 
 	bool operator<(TreeNode& other) {
 		return (this->frequency < other.frequency);
@@ -26,6 +27,7 @@ std::string fileName;
 
 //Array is built right to left, so this is ptr at what should be the "0" element.
 int huffStart = 513;
+int huffEnd;
 TreeNode huffmanTable[513];
 
 int freqStart = 0;
@@ -106,17 +108,26 @@ void makeHuffmanTree() {
 			frequencyTable[i + 1] = std::move(mergeNode);
 		}
 	}
+
+	huffEnd = 513 - huffStart;
+	//fix huffman to be left to right
+	if (huffStart != 0) {
+		for (int i = 0; i < huffEnd; ++i) {
+			huffmanTable[i] = std::move(huffmanTable[i + huffStart]);
+			if (huffmanTable[i].glyph == -1) {
+				huffmanTable[i].leftptr -= huffStart;
+				huffmanTable[i].rightptr -= huffStart;
+			}
+		}
+	}
 }
 
 int main() {
 	std::ifstream fin;
 	std::cin >> fileName;
 
-	//Read entire file into a buffer variable;
-	//While doing so add the frequencies to frequencyList;
 	fin.open(fileName, std::ios::binary);
 	
-	//comment this out for final build.
 	checkFin(fin);
 
 	initFreqTable();
@@ -124,26 +135,10 @@ int main() {
 	readFile(fin);
 	frequencyTable[256].frequency += 1;
 
-	//determine freqtable start
 	std::sort(frequencyTable.begin(), frequencyTable.end());
 	findFreqStart();
 	
 	makeHuffmanTree();
-	
-
-	int huffEnd;
-	//fix huffman to be left to right
-	if (huffStart != 0) {
-		for (int i = 0; i < 513 - huffStart; ++i) {
-			huffmanTable[i] = std::move(huffmanTable[i + huffStart]);
-			if (huffmanTable[i].glyph == -1) {
-				huffmanTable[i].leftptr -= huffStart;
-				huffmanTable[i].rightptr -= huffStart;
-			}
-			huffEnd = i;
-		}
-	}
-	
 
 	//encode 
 
