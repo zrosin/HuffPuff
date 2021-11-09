@@ -1,6 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <algorithm> // sort
+#include <utility> // move
+#include <array> // used in sort
 
 struct TreeNode {
 	int glyph = -1;
@@ -22,77 +25,125 @@ struct TreeNode {
 std::string fileName;
 
 //Array is built right to left, so this is ptr at what should be the "0" element.
-int huffStart = 512;
+int huffStart = 513;
 TreeNode huffmanTable[513];
 
-int freqEnd = 256;
-TreeNode frequencyTable[257] = { 0 };
+int freqStart = 0;
+std::array<TreeNode, 257> frequencyTable;
 
-std::ifstream fin;
+std::vector<unsigned char> fileContent;
 const int bufferSize = 16;
 int bufferRemainder = 0;
 
 void checkFin(std::ifstream& fin) {
 	//Check file opened
 	if (!fin.is_open()) {
-		cout << "Error reading " << fileName << " please check filename." << endl;
+		std::cout << "Error reading " << fileName << " please check filename." << std::endl;
 		exit(0);
 	}
 }
 
-int main() {
-	std::cin >> fileName;
+void initFreqTable() {
+	for (int i = 0; i < 257; ++i)
+	{
+		frequencyTable[i].glyph = i;
+	}
+}
 
-	//Read entire file into a buffer variable;
-	//While doing so add the frequencies to frequencyList;
-	fin.open(fileName, std::ios::hex);
-	
-	//comment this out for final build.
-	checkFin(fin);
+void findFreqStart() {
+	for (int i = 0; i < 267; ++i) {
+		if (frequencyTable[i].frequency != 0) {
+			freqStart = i;
+			return;
+		}
+	}
+}
 
-	//get file size
+void readFile(std::ifstream& fin) {
 	fin.seekg(0, std::ios::end);
 	int size = fin.tellg();
 	fin.seekg(0);
 	bufferRemainder = size % bufferSize;
-
-	std::vector<unsigned char [bufferSize]> fileContent((size / bufferSize) + (bool)bufferRemainder);
-
-	for (int i = 0; i < fileContent.size(); ++i)
-	{
-		frequencyTable[i].glyph = i;
-	}
-
+	
 	unsigned char buffer[bufferSize];
 	for (int i = 0; i < (size / bufferSize); ++i) {
 		fin.read((char*)buffer, bufferSize);
 
 		for (int j = 0; j < bufferSize; ++j) {
-			frequencyTable[buffer[i]].frequency += 1;
+			frequencyTable[(int)buffer[j]].frequency += 1;
+			fileContent.push_back(buffer[j]);
 		}
-
-		fileContent.push_back(buffer);
 	}
 
-	bufferRemainder = size % bufferSize;
-	if (bufferRemainder != 0) {\
+
+	if (bufferRemainder != 0) {
 		fin.read((char*)buffer, bufferSize);
 
 		for (int i = 0; i < bufferRemainder; i++) {
-			frequencyTable[buffer[i]].frequency += 1;
+			frequencyTable[(int)buffer[i]].frequency += 1;
+			fileContent.push_back(buffer[i]);
 		}
-
-		fileContent.push_back(buffer);
 	}
+}
 
-	//condense freqtable and set freqend variable;
-	for (int i = 0; i < 257 && frequencyTable[i].frequency != 0; ++i) {
-
-	}
-
-	//Quicksort
-
+void makeHuffmanTree() {
 	//create huffman table
+	for (int i = freqStart; i < 257; ++i) {
+		std::sort(frequencyTable.begin() + i, frequencyTable.end());
+		if (i == 256) {
+			huffStart -= 1;
+			huffmanTable[huffStart] = std::move(frequencyTable[i]);
+			break;
+		}
+		else {
+			TreeNode mergeNode;
+			mergeNode.frequency = frequencyTable[i].frequency + frequencyTable[i + 1].frequency;
+			mergeNode.leftptr = huffStart - 1;
+			mergeNode.rightptr = huffStart - 2;
+			huffmanTable[huffStart - 1] = std::move(frequencyTable[i]);
+			huffmanTable[huffStart - 2] = std::move(frequencyTable[i + 1]);
+			huffStart -= 2;
+			frequencyTable[i + 1] = std::move(mergeNode);
+		}
+	}
+}
+
+int main() {
+	std::ifstream fin;
+	std::cin >> fileName;
+
+	//Read entire file into a buffer variable;
+	//While doing so add the frequencies to frequencyList;
+	fin.open(fileName, std::ios::binary);
+	
+	//comment this out for final build.
+	checkFin(fin);
+
+	initFreqTable();
+
+	readFile(fin);
+	frequencyTable[256].frequency += 1;
+
+	//determine freqtable start
+	std::sort(frequencyTable.begin(), frequencyTable.end());
+	findFreqStart();
+	
+	makeHuffmanTree();
+	
+
+	int huffEnd;
+	//fix huffman to be left to right
+	if (huffStart != 0) {
+		for (int i = 0; i < 513 - huffStart; ++i) {
+			huffmanTable[i] = std::move(huffmanTable[i + huffStart]);
+			if (huffmanTable[i].glyph == -1) {
+				huffmanTable[i].leftptr -= huffStart;
+				huffmanTable[i].rightptr -= huffStart;
+			}
+			huffEnd = i;
+		}
+	}
+	
 
 	//encode 
 
