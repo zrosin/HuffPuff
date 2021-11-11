@@ -139,19 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="puff.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="testSCUD.huf" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="links.huf" />
-    <None Include="links1.huf" />
-    <None Include="test.huf" />
-    <None Include="test1.huf" />
+    <ClCompile Include="huff.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

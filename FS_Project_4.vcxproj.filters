@@ -15,11 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="puff.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="testSCUD.huf">
       <Filter>Resource Files</Filter>
     </None>
@@ -30,17 +25,8 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <None Include="test.huf">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="test1.huf">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="links1.huf">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="links.huf">
-      <Filter>Resource Files</Filter>
-    </None>
+    <ClCompile Include="huff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

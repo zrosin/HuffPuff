@@ -222,13 +222,13 @@ int main() {
 	//huffEnd + 1 is the number of elements in huffman array
 	//fileName is file name
 
-
+	
 	int fileNameSize = fileName.size();
+	int huffRealEnd = huffEnd + 1;
 
-	fout.write((char*)&fileNameSize, sizeof(int));
+	fout.write((char*)&fileNameSize, sizeof fileNameSize);
 	fout << fileName;
-	int end = huffEnd + 1;
-	fout.write((char*)&end, sizeof(int));
+	fout.write((char*)&huffRealEnd, sizeof huffRealEnd);
 
 	int temp[3];
 
@@ -239,5 +239,52 @@ int main() {
 		fout.write((char*)&temp, sizeof(int) * 3);
 	}
 
-	
+	int fileIter = 0;
+	int byteIter = 0;
+	std::bitset<8> byte;
+	std::vector<bool> leftovers;
+	bool alreadyReversed = false;
+	char c;
+	while (fileIter < fileContent.size()) {
+		if (leftovers.size()) {
+			if (!alreadyReversed) {
+				std::reverse(leftovers.begin(), leftovers.end());
+			}
+			
+			for (int i = 0; i < 8; ++i) {
+				byte[byteIter] = leftovers.back();
+				leftovers.pop_back();
+				++byteIter;
+				if (i = leftovers.size() - 1) {
+					alreadyReversed = false;
+					break;
+				}
+				else {
+					alreadyReversed = true;
+				}
+			}
+		}
+		while (byteIter < 8) {
+			for (int i = 0; i < codes[fileContent[fileIter]].size(); ++i) {
+				if (byteIter < 8) {
+					byte[byteIter] = codes[fileContent[fileIter]][i];
+					++byteIter;
+				}
+				else {
+					leftovers.push_back(codes[fileContent[fileIter]][i]);
+				}
+			}
+			++fileIter;
+		}
+		if (byteIter == 8) {
+			c = (char)byte.to_ulong();
+			fout.write((char*)&c, sizeof c);
+			byteIter = 0;
+		}
+	}
+	//four cases
+	//leftovers in leftovers
+	//leftovers in byte
+	//no leftovers
+	if(leftovers.size() == 0)
 }
