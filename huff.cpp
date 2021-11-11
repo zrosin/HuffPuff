@@ -177,12 +177,28 @@ void mapHuffToCode() {
 	
 }
 
+std::string hufFileName(std::string fileName) {
+	std::string temp;
+	int pos = fileName.find(".");
+	if (pos != std::string::npos) {
+		temp = fileName.substr(0, pos);
+	}
+	else {
+		temp = fileName;
+	}
+	return temp;
+}
+
 int main() {
 	std::ifstream fin;
+	std::ofstream fout;
 	std::cin >> fileName;
 
+	std::string newFileName = hufFileName(fileName) + ".huf";
+
 	fin.open(fileName, std::ios::binary);
-	
+	fout.open(newFileName, std::ios::out | std::ios::binary);
+
 	checkFin(fin);
 
 	initFreqTable();
@@ -192,7 +208,7 @@ int main() {
 
 	std::sort(frequencyTable.begin(), frequencyTable.end());
 	findFreqStart();
-	
+
 	makeHuffmanTree();
 
 	mapHuffToCode();
@@ -202,34 +218,133 @@ int main() {
 	//huffEnd + 1 is the number of elements in huffman array
 	//fileName is file name
 
-	//encode and output
-	int inputIter = 0;
-	int outputIter = 0;
-	for (int i = 0; i < fileContent.size() / (outputBufferSize - 9); ++i) {
-		while (fileContent.size() > (outputBufferSize - 9)) {
-			for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
-				outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
-				outputIter++;
-			}
-			++inputIter;
-		}
-		outputIter = 0;
+	fout.write((char*)fileName.size(), sizeof(int));
+	fout << fileName;
+	fout.write((char*)((int)huffEnd + 1), sizeof(int));
 
-		//output outputBuffer until outputIter
+	int temp[3];
+
+	for (int i = 0; i <= huffEnd; i++) {
+		temp[0] = huffmanTable[i].glyph;
+		temp[1] = huffmanTable[i].leftptr;
+		temp[2] = huffmanTable[i].rightptr;
+		fout.write((char*)temp, sizeof(int) * 3);
 	}
 
-	int remainder = fileContent.size() - inputIter;
+	////encode and output
+	//int inputIter = 0;
+	//int outputIter = 0;
+	//std::vector<bool> leftOvers;
+	//int outputOverEight;
+	//int leftOversSize = 0;
 
-	if (remainder != 0) {
-		for (int i = 0; i < remainder; ++i) {
-			for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
-				outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
-				outputIter++;
-			}
-			++inputIter;
-		}
-		//output outputBuffer until outputIter
-	}
+	//for (int i = 0; i < fileContent.size() / (outputBufferSize - 9); ++i) {
+	//	while (fileContent.size() > (outputBufferSize - 9)) {
+	//		for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
+	//			outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
+	//			outputIter++;
+	//		}
+	//		++inputIter;
+	//	}
+	//	outputIter = 0;
 
-	//dont forget to output codes[256], and to fill any remaining bits with 0
+	//	//output outputBuffer until outputIter
+	//	if (leftOversSize == 0) {
+	//		outputOverEight = (outputIter / sizeof(char*));
+	//		fout.write((char*)outputBuffer, outputOverEight);
+
+	//		leftOversSize = outputIter % sizeof(char*);
+	//		leftOvers.resize(leftOversSize);
+
+	//		if (leftOversSize != 0) {
+	//			for (int i = 0; i < leftOversSize; i++) {
+	//				leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+	//			}
+	//		}
+	//	}
+	//	else {
+	//		outputOverEight = (outputIter / sizeof(char*));
+	//		fout.write((char*)(leftOvers, outputBuffer), outputOverEight);
+
+	//		leftOversSize = outputIter % sizeof(char*);
+	//		leftOvers.resize(leftOversSize);
+
+	//		if (leftOversSize != 0) {
+	//			for (int i = 0; i < leftOversSize; i++) {
+	//				leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+	//			}
+	//		}
+	//	}
+	//}
+
+	//int remainder = fileContent.size() - inputIter;
+
+	//if (remainder != 0) {
+	//	for (int i = 0; i < remainder; ++i) {
+	//		for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
+	//			outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
+	//			outputIter++;
+	//		}
+	//		++inputIter;
+	//	}
+	//	//output outputBuffer until outputIter
+	//	if (leftOversSize == 0) {
+	//		outputOverEight = (outputIter / sizeof(char*));
+	//		fout.write((char*)outputBuffer, outputOverEight);
+
+	//		leftOversSize = outputIter % sizeof(char*);
+	//		leftOvers.resize(leftOversSize);
+
+	//		if (leftOversSize != 0) {
+	//			for (int i = 0; i < leftOversSize; i++) {
+	//				leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+	//			}
+	//		}
+	//	}
+	//	else {
+	//		outputOverEight = (outputIter / sizeof(char*));
+	//		fout.write((char*)(leftOvers, outputBuffer), outputOverEight);
+
+	//		leftOversSize = outputIter % sizeof(char*);
+	//		leftOvers.resize(leftOversSize);
+
+	//		if (leftOversSize != 0) {
+	//			for (int i = 0; i < leftOversSize; i++) {
+	//				leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+	//			}
+	//		}
+	//	}
+	//}
+
+	////dont forget to output codes[256], and to fill any remaining bits with 0
+	//bool eofOutput[16];
+	//int eofIter = 0;
+
+	//if (leftOversSize == 0) {
+	//	for (int i = 0; i < 16; i++) {
+	//		if (i > codes[256].size()) {
+	//			eofOutput[i] = false;
+	//		}
+	//		else {
+	//			eofOutput[i] = codes[256][i];
+	//			eofIter++;
+	//		}
+	//	}
+	//}
+	//else {
+	//	for (int i = 0; i < 16; i++) {
+	//		if (i < leftOversSize) {
+	//			eofOutput[i] = leftOvers[i];
+	//			eofIter++;
+	//		}
+	//		else if ((i - leftOversSize) < codes[256].size()) {
+	//			eofOutput[i] = codes[256][i - leftOversSize];
+	//			eofIter++;
+	//		}
+	//		else {
+	//			eofOutput[i] = false;
+	//		}
+	//	}
+	//}
+	//fout.write((char*)eofOutput, (eofIter / 8) + 1);
 }
