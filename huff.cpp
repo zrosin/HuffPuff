@@ -197,6 +197,7 @@ int main() {
 	std::string newFileName = hufFileName(fileName) + ".huf";
 
 	fin.open(fileName, std::ios::binary);
+
 	fout.open(newFileName, std::ios::out | std::ios::binary);
 
 	checkFin(fin);
@@ -217,7 +218,7 @@ int main() {
 	//huffEnd shows the last used element in the huffman array
 	//huffEnd + 1 is the number of elements in huffman array
 	//fileName is file name
-
+	
 	fout.write((char*)fileName.size(), sizeof(int));
 	fout << fileName;
 	fout.write((char*)((int)huffEnd + 1), sizeof(int));
@@ -231,120 +232,120 @@ int main() {
 		fout.write((char*)temp, sizeof(int) * 3);
 	}
 
-	////encode and output
-	//int inputIter = 0;
-	//int outputIter = 0;
-	//std::vector<bool> leftOvers;
-	//int outputOverEight;
-	//int leftOversSize = 0;
+	//encode and output
+	int inputIter = 0;
+	int outputIter = 0;
+	std::vector<bool> leftOvers;
+	int outputOverEight;
+	int leftOversSize = 0;
 
-	//for (int i = 0; i < fileContent.size() / (outputBufferSize - 9); ++i) {
-	//	while (fileContent.size() > (outputBufferSize - 9)) {
-	//		for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
-	//			outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
-	//			outputIter++;
-	//		}
-	//		++inputIter;
-	//	}
-	//	outputIter = 0;
+	for (int i = 0; i < fileContent.size() / (outputBufferSize - 9); ++i) {
+		while (fileContent.size() > (outputBufferSize - 9)) {
+			for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
+				outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
+				outputIter++;
+			}
+			++inputIter;
+		}
+		outputIter = 0;
 
-	//	//output outputBuffer until outputIter
-	//	if (leftOversSize == 0) {
-	//		outputOverEight = (outputIter / sizeof(char*));
-	//		fout.write((char*)outputBuffer, outputOverEight);
+		//output outputBuffer until outputIter
+		if (leftOversSize == 0) {
+			outputOverEight = (outputIter / sizeof(char*));
+			fout.write((char*)outputBuffer, outputOverEight);
 
-	//		leftOversSize = outputIter % sizeof(char*);
-	//		leftOvers.resize(leftOversSize);
+			leftOversSize = outputIter % sizeof(char*);
+			leftOvers.resize(leftOversSize);
 
-	//		if (leftOversSize != 0) {
-	//			for (int i = 0; i < leftOversSize; i++) {
-	//				leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
-	//			}
-	//		}
-	//	}
-	//	else {
-	//		outputOverEight = (outputIter / sizeof(char*));
-	//		fout.write((char*)(leftOvers, outputBuffer), outputOverEight);
+			if (leftOversSize != 0) {
+				for (int i = 0; i < leftOversSize; i++) {
+					leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+				}
+			}
+		}
+		else {
+			outputOverEight = (outputIter / sizeof(char*));
+			fout.write((char*)(leftOvers, outputBuffer), outputOverEight);
 
-	//		leftOversSize = outputIter % sizeof(char*);
-	//		leftOvers.resize(leftOversSize);
+			leftOversSize = outputIter % sizeof(char*);
+			leftOvers.resize(leftOversSize);
 
-	//		if (leftOversSize != 0) {
-	//			for (int i = 0; i < leftOversSize; i++) {
-	//				leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
-	//			}
-	//		}
-	//	}
-	//}
+			if (leftOversSize != 0) {
+				for (int i = 0; i < leftOversSize; i++) {
+					leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+				}
+			}
+		}
+	}
 
-	//int remainder = fileContent.size() - inputIter;
+	int remainder = fileContent.size() - inputIter;
 
-	//if (remainder != 0) {
-	//	for (int i = 0; i < remainder; ++i) {
-	//		for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
-	//			outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
-	//			outputIter++;
-	//		}
-	//		++inputIter;
-	//	}
-	//	//output outputBuffer until outputIter
-	//	if (leftOversSize == 0) {
-	//		outputOverEight = (outputIter / sizeof(char*));
-	//		fout.write((char*)outputBuffer, outputOverEight);
+	if (remainder != 0) {
+		for (int i = 0; i < remainder; ++i) {
+			for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
+				outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
+				outputIter++;
+			}
+			++inputIter;
+		}
+		//output outputBuffer until outputIter
+		if (leftOversSize == 0) {
+			outputOverEight = (outputIter / sizeof(char*));
+			fout.write((char*)outputBuffer, outputOverEight);
 
-	//		leftOversSize = outputIter % sizeof(char*);
-	//		leftOvers.resize(leftOversSize);
+			leftOversSize = outputIter % sizeof(char*);
+			leftOvers.resize(leftOversSize);
 
-	//		if (leftOversSize != 0) {
-	//			for (int i = 0; i < leftOversSize; i++) {
-	//				leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
-	//			}
-	//		}
-	//	}
-	//	else {
-	//		outputOverEight = (outputIter / sizeof(char*));
-	//		fout.write((char*)(leftOvers, outputBuffer), outputOverEight);
+			if (leftOversSize != 0) {
+				for (int i = 0; i < leftOversSize; i++) {
+					leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+				}
+			}
+		}
+		else {
+			outputOverEight = (outputIter / sizeof(char*));
+			fout.write((char*)(leftOvers, outputBuffer), outputOverEight);
 
-	//		leftOversSize = outputIter % sizeof(char*);
-	//		leftOvers.resize(leftOversSize);
+			leftOversSize = outputIter % sizeof(char*);
+			leftOvers.resize(leftOversSize);
 
-	//		if (leftOversSize != 0) {
-	//			for (int i = 0; i < leftOversSize; i++) {
-	//				leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
-	//			}
-	//		}
-	//	}
-	//}
+			if (leftOversSize != 0) {
+				for (int i = 0; i < leftOversSize; i++) {
+					leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+				}
+			}
+		}
+	}
 
-	////dont forget to output codes[256], and to fill any remaining bits with 0
-	//bool eofOutput[16];
-	//int eofIter = 0;
+	//dont forget to output codes[256], and to fill any remaining bits with 0
+	bool eofOutput[16];
+	int eofIter = 0;
 
-	//if (leftOversSize == 0) {
-	//	for (int i = 0; i < 16; i++) {
-	//		if (i > codes[256].size()) {
-	//			eofOutput[i] = false;
-	//		}
-	//		else {
-	//			eofOutput[i] = codes[256][i];
-	//			eofIter++;
-	//		}
-	//	}
-	//}
-	//else {
-	//	for (int i = 0; i < 16; i++) {
-	//		if (i < leftOversSize) {
-	//			eofOutput[i] = leftOvers[i];
-	//			eofIter++;
-	//		}
-	//		else if ((i - leftOversSize) < codes[256].size()) {
-	//			eofOutput[i] = codes[256][i - leftOversSize];
-	//			eofIter++;
-	//		}
-	//		else {
-	//			eofOutput[i] = false;
-	//		}
-	//	}
-	//}
-	//fout.write((char*)eofOutput, (eofIter / 8) + 1);
+	if (leftOversSize == 0) {
+		for (int i = 0; i < 16; i++) {
+			if (i > codes[256].size()) {
+				eofOutput[i] = false;
+			}
+			else {
+				eofOutput[i] = codes[256][i];
+				eofIter++;
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < 16; i++) {
+			if (i < leftOversSize) {
+				eofOutput[i] = leftOvers[i];
+				eofIter++;
+			}
+			else if ((i - leftOversSize) < codes[256].size()) {
+				eofOutput[i] = codes[256][i - leftOversSize];
+				eofIter++;
+			}
+			else {
+				eofOutput[i] = false;
+			}
+		}
+	}
+	fout.write((char*)eofOutput, (eofIter / 8) + 1);
 }

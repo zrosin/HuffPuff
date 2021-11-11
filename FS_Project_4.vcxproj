@@ -139,7 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="huff.cpp" />
+    <ClCompile Include="puff.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="testSCUD.huf" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt" />
