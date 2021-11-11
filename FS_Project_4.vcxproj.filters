@@ -18,6 +18,18 @@
     <None Include="testSCUD.huf">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="links.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="RAGSlinks.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="RAGStest.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="test.huf">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt">
@@ -25,7 +37,7 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="huff.cpp">
+    <ClCompile Include="puff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -224,7 +224,7 @@ int main() {
 
 	
 	int fileNameSize = fileName.size();
-	int huffRealEnd = huffEnd + 1;
+	int huffRealEnd = huffEnd;
 
 	fout.write((char*)&fileNameSize, sizeof fileNameSize);
 	fout << fileName;
@@ -232,7 +232,7 @@ int main() {
 
 	int temp[3];
 
-	for (int i = 0; i <= huffEnd; i++) {
+	for (int i = 0; i < huffEnd; i++) {
 		temp[0] = huffmanTable[i].glyph;
 		temp[1] = huffmanTable[i].leftptr;
 		temp[2] = huffmanTable[i].rightptr;
@@ -255,7 +255,7 @@ int main() {
 				byte[byteIter] = leftovers.back();
 				leftovers.pop_back();
 				++byteIter;
-				if (i = leftovers.size() - 1) {
+				if (leftovers.size() == 0) {
 					alreadyReversed = false;
 					break;
 				}
@@ -264,7 +264,7 @@ int main() {
 				}
 			}
 		}
-		while (byteIter < 8) {
+		while (byteIter < 8 && fileIter < fileContent.size()) {
 			for (int i = 0; i < codes[fileContent[fileIter]].size(); ++i) {
 				if (byteIter < 8) {
 					byte[byteIter] = codes[fileContent[fileIter]][i];
@@ -280,11 +280,65 @@ int main() {
 			c = (char)byte.to_ulong();
 			fout.write((char*)&c, sizeof c);
 			byteIter = 0;
+			byte.reset();
 		}
 	}
-	//four cases
+	//three cases
 	//leftovers in leftovers
 	//leftovers in byte
 	//no leftovers
-	if(leftovers.size() == 0)
+
+	//no leftovers or leftovers in byte
+	if (leftovers.size() == 0 && byteIter == 0 || leftovers.size() == 0 && byteIter > 0) {
+		byte.reset();
+		for (int i = 0; i < codes[256].size(); ++i) {
+			if (byteIter < 8) {
+				byte[byteIter] = codes[256][i];
+				++byteIter;
+			}
+			else {
+				leftovers.push_back(codes[256][i]);
+			}
+		}
+
+		c = (char)byte.to_ulong();
+		fout.write((char*)&c, sizeof c);
+		byteIter = 0;
+		
+		if (leftovers.size() != 0) {
+			byte.reset(); 
+			std::reverse(leftovers.begin(), leftovers.end());
+			for (int i = 0; i < 8; ++i) {
+				byte[byteIter] = leftovers.back();
+				leftovers.pop_back();
+				++byteIter;
+				if (leftovers.size() == 0) {
+					break;
+				}
+			}
+		}
+	}
+
+	else { // leftovers.size() > 0 
+		for (int i = 0; i < codes[256].size(); ++i) {
+			leftovers.push_back(codes[256][i]);
+		}
+		std::reverse(leftovers.begin(), leftovers.end());
+
+		for (int i = 0; i < leftovers.size() / 8; ++i) {
+			byte.reset();
+
+			for (int j = 0; j < 8; ++j) {
+				byte[byteIter] = leftovers.back();
+				leftovers.pop_back();
+				if (leftovers.size() == 0) {
+					break;
+				}
+			}
+
+			c = (char)byte.to_ulong();
+			fout.write((char*)&c, sizeof c);
+			byteIter = 0;
+		}
+	}
 }
