@@ -4,6 +4,7 @@
 #include <algorithm> // sort
 #include <utility> // move
 #include <array> // used in sort
+#include <bitset>
 
 struct TreeNode {
 	int glyph = -1;
@@ -219,9 +220,12 @@ int main() {
 	//huffEnd + 1 is the number of elements in huffman array
 	//fileName is file name
 	
-	fout.write((char*)fileName.size(), sizeof(int));
+	int fileNameSize = fileName.size();
+	int huffRealEnd = huffEnd + 1;
+
+	fout.write((char*)&fileNameSize, sizeof fileNameSize);
 	fout << fileName;
-	fout.write((char*)((int)huffEnd + 1), sizeof(int));
+	fout.write((char*)&huffRealEnd, sizeof huffRealEnd);
 
 	int temp[3];
 
@@ -232,120 +236,51 @@ int main() {
 		fout.write((char*)temp, sizeof(int) * 3);
 	}
 
-	//encode and output
-	int inputIter = 0;
-	int outputIter = 0;
-	std::vector<bool> leftOvers;
-	int outputOverEight;
-	int leftOversSize = 0;
-
-	for (int i = 0; i < fileContent.size() / (outputBufferSize - 9); ++i) {
-		while (fileContent.size() > (outputBufferSize - 9)) {
-			for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
-				outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
-				outputIter++;
+	int fileIter = 0;
+	int byteIter = 0;
+	std::bitset<8> byte;
+	std::vector<bool> leftovers;
+	bool alreadyReversed = false;
+	char c;
+	while (fileIter < fileContent.size()) {
+		if (leftovers.size()) {
+			if (!alreadyReversed) {
+				std::reverse(leftovers.begin(), leftovers.end());
 			}
-			++inputIter;
-		}
-		outputIter = 0;
-
-		//output outputBuffer until outputIter
-		if (leftOversSize == 0) {
-			outputOverEight = (outputIter / sizeof(char*));
-			fout.write((char*)outputBuffer, outputOverEight);
-
-			leftOversSize = outputIter % sizeof(char*);
-			leftOvers.resize(leftOversSize);
-
-			if (leftOversSize != 0) {
-				for (int i = 0; i < leftOversSize; i++) {
-					leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+			
+			for (int i = 0; i < 8; ++i) {
+				byte[byteIter] = leftovers.back();
+				leftovers.pop_back();
+				++byteIter;
+				if (i = leftovers.size() - 1) {
+					alreadyReversed = false;
+					break;
+				}
+				else {
+					alreadyReversed = true;
 				}
 			}
 		}
-		else {
-			outputOverEight = (outputIter / sizeof(char*));
-			fout.write((char*)(leftOvers, outputBuffer), outputOverEight);
-
-			leftOversSize = outputIter % sizeof(char*);
-			leftOvers.resize(leftOversSize);
-
-			if (leftOversSize != 0) {
-				for (int i = 0; i < leftOversSize; i++) {
-					leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
+		while (byteIter < 8) {
+			for (int i = 0; i < codes[fileContent[fileIter]].size(); ++i) {
+				if (byteIter < 8) {
+					byte[byteIter] = codes[fileContent[fileIter]][i];
+					++byteIter;
+				}
+				else {
+					leftovers.push_back(codes[fileContent[fileIter]][i]);
 				}
 			}
+			++fileIter;
+		}
+		if (byteIter == 8) {
+			c = (char)byte.to_ulong();
+			fout.write((char*)&c, sizeof c);
+			byteIter = 0;
 		}
 	}
-
-	int remainder = fileContent.size() - inputIter;
-
-	if (remainder != 0) {
-		for (int i = 0; i < remainder; ++i) {
-			for (int j = 0; j < codes[fileContent[inputIter]].size(); ++j) {
-				outputBuffer[outputIter] = codes[fileContent[inputIter]][j];
-				outputIter++;
-			}
-			++inputIter;
-		}
-		//output outputBuffer until outputIter
-		if (leftOversSize == 0) {
-			outputOverEight = (outputIter / sizeof(char*));
-			fout.write((char*)outputBuffer, outputOverEight);
-
-			leftOversSize = outputIter % sizeof(char*);
-			leftOvers.resize(leftOversSize);
-
-			if (leftOversSize != 0) {
-				for (int i = 0; i < leftOversSize; i++) {
-					leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
-				}
-			}
-		}
-		else {
-			outputOverEight = (outputIter / sizeof(char*));
-			fout.write((char*)(leftOvers, outputBuffer), outputOverEight);
-
-			leftOversSize = outputIter % sizeof(char*);
-			leftOvers.resize(leftOversSize);
-
-			if (leftOversSize != 0) {
-				for (int i = 0; i < leftOversSize; i++) {
-					leftOvers[i] = outputBuffer[(outputOverEight * 8) + i];
-				}
-			}
-		}
-	}
-
-	//dont forget to output codes[256], and to fill any remaining bits with 0
-	bool eofOutput[16];
-	int eofIter = 0;
-
-	if (leftOversSize == 0) {
-		for (int i = 0; i < 16; i++) {
-			if (i > codes[256].size()) {
-				eofOutput[i] = false;
-			}
-			else {
-				eofOutput[i] = codes[256][i];
-				eofIter++;
-			}
-		}
-	}
-	else {
-		for (int i = 0; i < 16; i++) {
-			if (i < leftOversSize) {
-				eofOutput[i] = leftOvers[i];
-				eofIter++;
-			}
-			else if ((i - leftOversSize) < codes[256].size()) {
-				eofOutput[i] = codes[256][i - leftOversSize];
-				eofIter++;
-			}
-			else {
-				eofOutput[i] = false;
-			}
-		}
-	}
-	fout.write((char*)eofOutput, (eofIter / 8) + 1);
+	//three cases
+	//leftovers in leftovers
+	//leftovers in byte
+	//no leftovers
 }
