@@ -332,3 +332,12 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+
+# Our ignnores
+*.huf
+LETTERS.TXT
+links.cpp
+ptw32.hlp
+test.txt
+text1.txt
