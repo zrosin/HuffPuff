@@ -29,4 +29,18 @@
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="test.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="test1.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="links1.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="links.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
