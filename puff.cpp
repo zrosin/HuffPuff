@@ -25,52 +25,6 @@ TreeNode huffmanTable[513];
 int huffEnd;
 std::vector<std::vector<bool>> codes(257);
 
-void mapHuffToCode() {
-	for (int j = 0; j < 257; ++j) {
-		for (int i = 0; i < 513; ++i) {
-			if (j == huffmanTable[i].glyph) {
-				std::vector<bool> temp;
-
-				//this case is disgusting
-				if (huffEnd == 0) {
-					temp.push_back(true);
-					codes[j] = temp;
-					return;
-				}
-				//this is disgusting too
-				else {
-					int previousNode = i;
-					do {
-						for (int k = 0; k < 513; ++k) {
-							if (previousNode == huffmanTable[k].rightptr) {
-								temp.push_back(true);
-								previousNode = k;
-								break;
-							}
-							else if (previousNode == huffmanTable[k].leftptr) {
-								temp.push_back(false);
-								previousNode = k;
-								break;
-							}
-						}
-						//flip with this code if codes come out perfectly backwards. I'm too tired to thunk about this.
-						/*
-						if (previousNode == 0) {
-							std::reverse(temp.begin(), temp.end());
-						}
-						*/
-
-					} while (previousNode != 0);
-				}
-
-				codes[j] = temp;
-				break;
-			}
-		}
-	}
-
-}
-
 
 int main() {
 	std::ifstream fin;

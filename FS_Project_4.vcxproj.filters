@@ -52,7 +52,7 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="huff.cpp">
+    <ClCompile Include="puff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -154,7 +154,7 @@
     <Text Include="text1.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="huff.cpp" />
+    <ClCompile Include="puff.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
