@@ -108,9 +108,9 @@ int main() {
 		huffmanTable[i].rightptr = temp[2];
 	}
 
-	huffEnd = huffEnd - 1;
+	//i think this was wrong. need to think about it.
+	//huffEnd++;
 
-	mapHuffToCode();
 	int myCurrentNode = 0;
 	char outputBuffer[1024];
 	int outputIter = 0;
@@ -132,12 +132,14 @@ int main() {
 			}
 			
 			if (huffmanTable[myCurrentNode].glyph != -1) {
-				outputBuffer[outputIter] = huffmanTable[myCurrentNode].glyph;
-				outputIter++;
 				if (huffmanTable[myCurrentNode].glyph == 256) {
 					eof = false;
 				}
-				myCurrentNode = 0;
+				else {
+					outputBuffer[outputIter] = huffmanTable[myCurrentNode].glyph;
+					outputIter++;
+					myCurrentNode = 0;
+				}
 			}
 		}
 

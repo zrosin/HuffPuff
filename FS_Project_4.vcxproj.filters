@@ -30,14 +30,29 @@
     <None Include="test.huf">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ptw32.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="RAGSptw32.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="text1.huf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="RAGStext1.huf">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="text1.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="puff.cpp">
+    <ClCompile Include="huff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -25,7 +25,7 @@ struct TreeNode {
 
 std::string fileName;
 
-int huffStart = 513;
+int huffStart = 512;
 int huffEnd;
 TreeNode huffmanTable[513];
 
@@ -99,34 +99,30 @@ void readFile(std::ifstream& fin) {
 //This is really slow
 void makeHuffmanTree() {
 	//create huffman table
-	for (int i = freqStart; i < 257; ++i) {
+	for (int i = freqStart; i < 257; i++) {
 		std::sort(frequencyTable.begin() + i, frequencyTable.end());
+
 		if (i == 256) {
-			huffStart -= 1;
-			huffmanTable[huffStart] = std::move(frequencyTable[i]);
-			break;
+			huffmanTable[huffStart] = frequencyTable[i];
 		}
 		else {
-			TreeNode mergeNode;
-			mergeNode.frequency = frequencyTable[i].frequency + frequencyTable[i + 1].frequency;
-			mergeNode.leftptr = huffStart - 1;
-			mergeNode.rightptr = huffStart - 2;
-			huffmanTable[huffStart - 1] = std::move(frequencyTable[i]);
-			huffmanTable[huffStart - 2] = std::move(frequencyTable[i + 1]);
+			TreeNode merge;
+			merge.frequency = frequencyTable[i].frequency + frequencyTable[i + 1].frequency;
+			huffmanTable[huffStart] = frequencyTable[i];
+			huffmanTable[huffStart - 1] = frequencyTable[i + 1];
+			merge.leftptr = huffStart;
+			merge.rightptr = huffStart - 1;
 			huffStart -= 2;
-			frequencyTable[i + 1] = std::move(mergeNode);
+			frequencyTable[i + 1] = merge;
 		}
 	}
 
 	huffEnd = 513 - huffStart;
-	//fix huffman to be left to right
-	if (huffStart != 0) {
-		for (int i = 0; i < huffEnd; ++i) {
-			huffmanTable[i] = std::move(huffmanTable[i + huffStart]);
-			if (huffmanTable[i].glyph == -1) {
-				huffmanTable[i].leftptr -= huffStart;
-				huffmanTable[i].rightptr -= huffStart;
-			}
+	for (int i = 0; i < huffEnd; ++i) {
+		huffmanTable[i] = huffmanTable[i + huffStart];
+		if (huffmanTable[i].glyph == -1) {
+			huffmanTable[i].leftptr -= huffStart;
+			huffmanTable[i].rightptr -= huffStart;
 		}
 	}
 }
@@ -137,38 +133,25 @@ void mapHuffToCode() {
 		for (int i = 0; i < 513; ++i) {
 			if (j == huffmanTable[i].glyph) {
 				std::vector<bool> temp;
-				
-				//this case is disgusting
-				if (huffEnd == 0) {
-					temp.push_back(true);
-					codes[j] = temp;
-					return;
-				}
-				//this is disgusting too
-				else {
-					int previousNode = i;
-					do {
-						for (int k = 0; k < 513; ++k) {
-							if (previousNode == huffmanTable[k].rightptr) {
-								temp.push_back(true);
-								previousNode = k;
-								break;
-							}
-							else if (previousNode == huffmanTable[k].leftptr) {
-								temp.push_back(false);
-								previousNode = k;
-								break;
-							}
+				int previousNode = i;
+				do {
+					for (int k = 0; k < 513; ++k) {
+						if (previousNode == huffmanTable[k].rightptr) {
+							temp.push_back(true);
+							previousNode = k;
+							break;
 						}
-						//flip with this code if codes come out perfectly backwards. I'm too tired to thunk about this.
-						/*
-						if (previousNode == 0) {
-							std::reverse(temp.begin(), temp.end());
+						else if (previousNode == huffmanTable[k].leftptr) {
+							temp.push_back(false);
+							previousNode = k;
+							break;
 						}
-						*/
+					}
+					if (previousNode == 0) {
+						std::reverse(temp.begin(), temp.end());
+					}
 						
-					} while (previousNode != 0);
-				}
+				} while (previousNode != 0);
 
 				codes[j] = temp;
 				break;
@@ -224,11 +207,10 @@ int main() {
 
 	
 	int fileNameSize = fileName.size();
-	int huffRealEnd = huffEnd;
 
 	fout.write((char*)&fileNameSize, sizeof fileNameSize);
 	fout << fileName;
-	fout.write((char*)&huffRealEnd, sizeof huffRealEnd);
+	fout.write((char*)&huffEnd, sizeof huffStart);
 
 	int temp[3];
 
@@ -290,7 +272,6 @@ int main() {
 
 	//no leftovers or leftovers in byte
 	if (leftovers.size() == 0 && byteIter == 0 || leftovers.size() == 0 && byteIter > 0) {
-		byte.reset();
 		for (int i = 0; i < codes[256].size(); ++i) {
 			if (byteIter < 8) {
 				byte[byteIter] = codes[256][i];
@@ -304,28 +285,42 @@ int main() {
 		c = (char)byte.to_ulong();
 		fout.write((char*)&c, sizeof c);
 		byteIter = 0;
-		
+		byte.reset();
+
 		if (leftovers.size() != 0) {
-			byte.reset(); 
 			std::reverse(leftovers.begin(), leftovers.end());
-			for (int i = 0; i < 8; ++i) {
-				byte[byteIter] = leftovers.back();
-				leftovers.pop_back();
-				++byteIter;
-				if (leftovers.size() == 0) {
-					break;
+			while (leftovers.size()) {
+				for (int i = 0; i < 8; ++i) {
+					byte[byteIter] = leftovers.back();
+					leftovers.pop_back();
+					++byteIter;
+					if (leftovers.size() == 0) {
+						break;
+					}
 				}
+				c = (char)byte.to_ulong();
+				fout.write((char*)&c, sizeof c);
+				byteIter = 0;
+				byte.reset();
 			}
 		}
 	}
 
 	else { // leftovers.size() > 0 
+		std:: vector<bool> tempvec;
 		for (int i = 0; i < codes[256].size(); ++i) {
-			leftovers.push_back(codes[256][i]);
+			tempvec.push_back(codes[256][i]);
 		}
-		std::reverse(leftovers.begin(), leftovers.end());
+		if (!alreadyReversed) {
+			std::reverse(leftovers.begin(), leftovers.end());
+		}
+		std::reverse(tempvec.begin(), tempvec.end());
 
-		for (int i = 0; i < leftovers.size() / 8; ++i) {
+		for (int i = 0; i < tempvec.size(); ++i) {
+			leftovers.push_back(tempvec[i]);
+		}
+
+		while (leftovers.size()) {
 			byte.reset();
 
 			for (int j = 0; j < 8; ++j) {
@@ -339,6 +334,7 @@ int main() {
 			c = (char)byte.to_ulong();
 			fout.write((char*)&c, sizeof c);
 			byteIter = 0;
+			byte.reset();
 		}
 	}
 }

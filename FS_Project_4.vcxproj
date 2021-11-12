@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -140,16 +140,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="links.huf" />
+    <None Include="ptw32.huf" />
     <None Include="RAGSlinks.huf" />
+    <None Include="RAGSptw32.huf" />
     <None Include="RAGStest.huf" />
+    <None Include="RAGStext1.huf" />
     <None Include="test.huf" />
     <None Include="testSCUD.huf" />
+    <None Include="text1.huf" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt" />
+    <Text Include="text1.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="puff.cpp" />
+    <ClCompile Include="huff.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
